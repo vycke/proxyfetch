@@ -1,26 +1,21 @@
-import typescript from "rollup-plugin-typescript2";
-import { terser } from "rollup-plugin-terser";
-import { nodeResolve } from "@rollup/plugin-node-resolve";
+import { terser } from 'rollup-plugin-terser';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
 
 export default [
   {
-    input: "src/index.ts",
+    input: 'src/index.js',
     output: {
-      dir: "dist/esm",
-      format: "esm",
+      dir: 'dist/esm',
+      format: 'esm',
     },
-    plugins: [nodeResolve(), typescript(), terser()],
+    plugins: [nodeResolve(), terser()],
   },
   {
-    input: "src/index.ts",
+    input: 'src/index.js',
     output: {
-      dir: "dist",
-      format: "cjs",
+      dir: 'dist',
+      format: 'cjs',
     },
-    plugins: [
-      nodeResolve(),
-      typescript({ tsconfig: "tsconfig.cjs.json" }),
-      terser(),
-    ],
+    plugins: [nodeResolve(), terser()],
   },
 ];
