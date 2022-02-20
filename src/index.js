@@ -8,25 +8,16 @@ class HTTPError extends Error {
 	}
 }
 
-// Chaining middle-/afterware
-function pipe(...fns) {
-	if (fns.length === 0) return (t) => t;
-	return fns.reduce((a, b) => (t) => {
-		return b(a(t));
-	});
-}
-
+// Basic configuration of a HTTP request
 const defaultConfig = { headers: { 'Content-Type': 'application/json' } };
 
-export function proxyfetch(url, config = {}) {
-	const { middleware, ..._config } = config;
+export function proxyfetch(url, partialRequest = defaultConfig) {
 	function get(_, method) {
 		return async function (ext = '', data = null) {
 			try {
 				// Create request object
-				const base = { method, ...defaultConfig, ..._config };
-				if (data) base.body = JSON.stringify(data);
-				const req = pipe(...(middleware || []))(base);
+				const req = { method, ...partialRequest };
+				if (data) req.body = JSON.stringify(data);
 
 				const res = await fetch(`${url}/${ext}`, req);
 				if (!res.ok) throw new HTTPError(res.status, res.statusText);
@@ -39,9 +30,9 @@ export function proxyfetch(url, config = {}) {
 	return new Proxy({}, { get });
 }
 
-export function proxyclient(url, config = {}) {
+export function proxyclient(url, partialRequest = defaultConfig) {
 	function get(_, key) {
-		return proxyfetch(`${url}/${key}`, config);
+		return proxyfetch(`${url}/${key}`, partialRequest);
 	}
 	return new Proxy({}, { get });
 }

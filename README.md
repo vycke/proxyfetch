@@ -23,22 +23,26 @@ console.log(response); // null
 console.log(error.status); // 404
 ```
 
-## Middleware
+## Wrapper example
 
-Middleware functions take a `Request` object as input, and a `Request` object as output.
+A second parameter can be used to set the attributes of a `Request` object, except for the `method` and `body`. Easy wrappers around `proxyfetch` can be created to add `Authorization`, change the `Content-Type` or different settings of a request. In the below example we set a JWT token, or call a refresh request when
 
 ```js
 import { proxyfetch } from 'proxyfetch';
 
-const mw = (req) => {
-		req.headers.Authorization = 'Bearer token';
-		return req;
-	};
-
-const service = proxyfetch('https://pokeapi.co/api/v2/pokemon/', {
-	config: middleware: [mw]
-});
+async function fetcher(url, baseRequest) {
+	const req = { ...baseRequest };
+	req.headers.Authorization = `Bearer ${token}`;
+	return await proxyFetch(url, req);
+}
 ```
+
+Great examples of logic that can be captured in wrappers (or middleware, depending on how you structure it), are:
+
+- Setting request configuration
+- Change the `Content-Type` of a specific request
+- Set authentication information
+- Determine if refresh is required before a request
 
 ## Named client
 

@@ -76,30 +76,6 @@ test('GET request - failure', async () => {
 	expect(err.message).toEqual('Forbidden');
 });
 
-test('GET request - success', async () => {
-	const mw1 = (req) => {
-		req.headers['Content-Type'] = 'test';
-		return req;
-	};
-
-	const mw2 = (req) => {
-		req.headers.Authorization = 'Bearer token';
-		return req;
-	};
-
-	const config = { middleware: [mw1, mw2] };
-
-	const [res, err] = await proxyfetch(
-		'https://test.com/middleware',
-		config
-	).get();
-	expect(res).toEqual({
-		authorization: 'Bearer token',
-		'content-type': 'test',
-	});
-	expect(err).toEqual(null);
-});
-
 test('proxyclient', async () => {
 	const client = proxyclient('https://test.com');
 	const [res, err] = await client.users.get();
