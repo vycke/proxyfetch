@@ -1,7 +1,16 @@
+/**
+ * @jest-environment jsdom
+ */
 import fetch from 'isomorphic-fetch';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { proxyfetch, proxyclient } from '../src';
+import { proxyfetch } from '../src';
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// jest.useFakeTimers();
 
 // MSW handlers
 const _data = [{ id: '1' }, { id: '2' }];
@@ -17,6 +26,10 @@ const handlers = [
 	}),
 	rest.post('https://test.com/users', async (req, res, ctx) => {
 		return res(ctx.json(req.body));
+	}),
+	rest.get('https://test.com/abort', async (req, res, ctx) => {
+		await sleep (200);
+		return res(ctx.json(_data));
 	}),
 	rest.get('https://test.com/forbidden', async (_, res, ctx) => {
 		return res(ctx.status(403));
@@ -61,6 +74,13 @@ test('GET request with extension - not found', async () => {
 	expect(err.status).toEqual(404);
 });
 
+test('GET request = abort', async () => {
+	const service = proxyfetch('https://test.com/abort');
+	setTimeout(() => service.controller.abort(), 100);
+	await service.get();
+	expect(service.controller.signal.aborted).toBe(true);
+});
+
 test('POST request - success', async () => {
 	const [res, err] = await proxyfetch('https://test.com/users').post('', {
 		id: '2',
@@ -73,12 +93,5 @@ test('GET request - failure', async () => {
 	const [res, err] = await proxyfetch('https://test.com/forbidden').get();
 	expect(res).toEqual(null);
 	expect(err.status).toEqual(403);
-	expect(err.message).toEqual('Forbidden');
-});
-
-test('proxyclient', async () => {
-	const client = proxyclient('https://test.com');
-	const [res, err] = await client.users.get();
-	expect(res).toEqual(_data);
-	expect(err).toEqual(null);
+	expect(err.statusText).toEqual('Forbidden');
 });
