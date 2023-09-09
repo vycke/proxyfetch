@@ -1,3 +1,4 @@
+import { test, expect, beforeAll, afterEach, afterAll } from "vitest";
 import fetch from "isomorphic-fetch";
 import { rest } from "msw";
 import { setupServer } from "msw/node";
@@ -52,21 +53,21 @@ afterAll(() => server.close());
 
 // Tests
 test("GET request - success", async () => {
-  const [res, err] = await proxyfetch("https://test.com/users").get();
+  const [res, err] = await proxyfetch("https://test.com/users").GET();
   expect(res).toEqual(_data);
   expect(err).toEqual(null);
 });
 
 test("GET request with extension - success", async () => {
-  let [res, err] = await proxyfetch("https://test.com/users/1").get();
+  let [res, err] = await proxyfetch("https://test.com/users/1").GET();
   expect(res).toEqual({ id: "1" });
   expect(err).toEqual(null);
-  [res, err] = await proxyfetch("https://test.com/users/2").get();
+  [res, err] = await proxyfetch("https://test.com/users/2").GET();
   expect(res).toEqual({ id: "2" });
 });
 
 test("GET request with extension - not found", async () => {
-  const [res, err] = await proxyfetch("https://test.com/users/3").get();
+  const [res, err] = await proxyfetch("https://test.com/users/3").GET();
   expect(res).toEqual(null);
   expect(err.status).toEqual(404);
 });
@@ -74,12 +75,12 @@ test("GET request with extension - not found", async () => {
 test("GET request = abort", async () => {
   const service = proxyfetch("https://test.com/abort");
   setTimeout(() => service.controller.abort(), 100);
-  await service.get();
+  await service.GET();
   expect(service.controller.signal.aborted).toBe(true);
 });
 
 test("POST request - success", async () => {
-  const [res, err] = await proxyfetch("https://test.com/users").post("", {
+  const [res, err] = await proxyfetch("https://test.com/users").POST("", {
     id: "2",
   });
   expect(res).toEqual({ id: "2" });
@@ -87,7 +88,7 @@ test("POST request - success", async () => {
 });
 
 test("GET request - failure", async () => {
-  const [res, err] = await proxyfetch("https://test.com/forbidden").get();
+  const [res, err] = await proxyfetch("https://test.com/forbidden").GET();
   expect(res).toEqual(null);
   expect(err.status).toEqual(403);
   expect(err.statusText).toEqual("Forbidden");
