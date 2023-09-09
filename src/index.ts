@@ -1,11 +1,6 @@
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "controller";
 type Fetch = () => Promise<unknown>;
-export type ProxyFetch = {
-  GET: Fetch;
-  POST: Fetch;
-  PUT: Fetch;
-  PATCH: Fetch;
-  DELETE: Fetch;
+export type ProxyFetch = Record<Method, Fetch> & {
   controller: AbortController;
 };
 type Request = {
