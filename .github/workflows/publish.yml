@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: 18
       - run: yarn
-      - run: yarn test
+      - run: yarn validate
 
   publish-npm:
     needs: test
